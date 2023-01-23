@@ -1,26 +1,29 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class Piece : MonoBehaviour
 {
     public Board board { get; private set; }
-    public TetrominoData data { get; private set; }
-    public Vector3Int[] cells { get; private set; }
-    public Vector3Int position { get; private set; }
+    public TetrominoData Datas { get; private set; }
+    public Vector3Int[] Cells { get; private set; }
+    public Vector3Int Position { get; private set; }
+    public int RotationIndex { get; private set; }
     
     public void Initialize(Board board, Vector3Int position, TetrominoData data)
     {
-        this.data = data;
+        RotationIndex = 0;
+        this.Datas = data;
         this.board = board;
-        this.position = position;
+        this.Position = position;
 
-        if (cells == null)
+        if (Cells == null)
         {
-            cells = new Vector3Int[data.Cells.Length];
+            Cells = new Vector3Int[data.Cells.Length];
         }
 
-        for (int i = 0; i < cells.Length; i++)
+        for (int i = 0; i < Cells.Length; i++)
         {
-            cells[i] = (Vector3Int)data.Cells[i];
+            Cells[i] = (Vector3Int)data.Cells[i];
         }
     }
 
@@ -30,6 +33,14 @@ public class Piece : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.S))
         {
             Move(Vector2Int.down);
+        }
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            Rotate(-1);
+        }
+        else if (Input.GetKeyDown(KeyCode.E))
+        {
+            Rotate(1);
         }
         // Handle hard drop
         if (Input.GetKeyDown(KeyCode.Space))
@@ -45,7 +56,7 @@ public class Piece : MonoBehaviour
         {
             Move(Vector2Int.right);
         }
-        board.Set(this);
+        board.DrawPiece(this);
     }
     private void HardDrop()
     {
@@ -57,7 +68,7 @@ public class Piece : MonoBehaviour
 
     private bool Move(Vector2Int translation)
     {
-        Vector3Int newPosition = position;
+        Vector3Int newPosition = Position;
         newPosition.x += translation.x;
         newPosition.y += translation.y;
 
@@ -66,9 +77,35 @@ public class Piece : MonoBehaviour
         // Only save the movement if the new position is valid
         if (valid)
         {
-            position = newPosition;
+            Position = newPosition;
         }
 
         return valid;
+    }
+
+    private void Rotate(int direction)
+    {
+        var matrix = Data.RotationMatrix;
+        this.RotationIndex = Helper.Wrap(this.RotationIndex + direction, 0, 4);
+        for(int i = 0;i < this.Cells.Length; i++)
+        {
+            Vector3 cell = this.Cells[i];
+            int x, y;
+            switch (this.Datas.Tetromino)
+            {
+                case Tetromino.I:
+                case Tetromino.O:
+                    cell.x -= 0.5f;
+                    cell.y -= 0.5f;
+                    x = Mathf.CeilToInt((cell.x * matrix[0] * direction) + (cell.y * matrix[1] * direction));
+                    y = Mathf.CeilToInt((cell.x * matrix[2] * direction) + (cell.y * matrix[3] * direction));
+                    break;
+                default:
+                    x = Mathf.RoundToInt((cell.x * matrix[0] * direction) + (cell.y * matrix[1] * direction));
+                    y = Mathf.RoundToInt((cell.x * matrix[2] * direction) + (cell.y * matrix[3] * direction));
+                    break;
+            }
+            this.Cells[i] = new(x, y, 0);
+        }
     }
 }

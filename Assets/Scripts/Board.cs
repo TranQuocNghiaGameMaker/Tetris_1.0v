@@ -3,8 +3,9 @@ using UnityEngine.Tilemaps;
 
 public class Board : MonoBehaviour
 {
-    public Tilemap tilemap { get; private set; }
-    public Piece activePiece { get; private set; }
+    public Tilemap Tilemap { get; private set; }
+    public Piece ActivePiece { get; private set; }
+    //private PieceManager _piece;
 
     [SerializeField] TetrominoData[] tetrominoes;
     [SerializeField] Vector2Int boardSize = new(10, 20);
@@ -21,8 +22,8 @@ public class Board : MonoBehaviour
 
     private void Awake()
     {
-        tilemap = GetComponentInChildren<Tilemap>();
-        activePiece = GetComponentInChildren<Piece>();
+        Tilemap = GetComponentInChildren<Tilemap>();
+        ActivePiece = GetComponentInChildren<Piece>();
 
         for (int i = 0; i < tetrominoes.Length; i++)
         {
@@ -40,11 +41,11 @@ public class Board : MonoBehaviour
         int random = Random.Range(0, tetrominoes.Length);
         TetrominoData data = tetrominoes[random];
 
-        activePiece.Initialize(this, _spawnPosition, data);
+        ActivePiece.Initialize(this, _spawnPosition, data);
 
-        if (IsValidPosition(activePiece, _spawnPosition))
+        if (IsValidPosition(ActivePiece, _spawnPosition))
         {
-            Set(activePiece);
+            DrawPiece(ActivePiece);
         }
         else
         {
@@ -52,39 +53,80 @@ public class Board : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        //Clear(_piece);
+        //if (Input.GetKeyDown(KeyCode.S))
+        //{
+        //    _piece.Move(Vector2Int.down);
+        //}
+        //// Handle hard drop
+        //if (Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    _piece.HardDrop();
+        //}
+        //// Left/right movement
+        //if (Input.GetKeyDown(KeyCode.A))
+        //{
+        //    _piece.Move(Vector2Int.left);
+        //}
+        //else if (Input.GetKeyDown(KeyCode.D))
+        //{
+        //    _piece.Move(Vector2Int.right);
+        //}
+        //DrawPiece(_piece);
+    }
+
+    //public void SpawnPiece()
+    //{
+    //    _piece = new(this, _spawnPosition, tetrominoes[1]);
+    //    if (IsValidPosition(_piece, _spawnPosition))
+    //    {
+    //        DrawPiece(_piece);
+    //    }
+    //    else
+    //    {
+    //        GameOver();
+    //    }
+    //}
+
     public void GameOver()
     {
-        tilemap.ClearAllTiles();
+        Tilemap.ClearAllTiles();
 
         // Do anything else you want on game over here..
     }
 
-    public void Set(Piece piece)
+    //Draw piece cell on the tile map
+    public void DrawPiece(Piece piece)
     {
-        for (int i = 0; i < piece.cells.Length; i++)
+        for (int i = 0; i < piece.Cells.Length; i++)
         {
-            Vector3Int tilePosition = piece.cells[i] + piece.position;
-            tilemap.SetTile(tilePosition, piece.data.tile);
+            Vector3Int tilePosition = piece.Cells[i] + piece.Position;
+            Tilemap.SetTile(tilePosition, piece.Datas.tile);
         }
     }
+    //Clear piece celltile on the tile map
 
     public void Clear(Piece piece)
     {
-        for (int i = 0; i < piece.cells.Length; i++)
+        for (int i = 0; i < piece.Cells.Length; i++)
         {
-            Vector3Int tilePosition = piece.cells[i] + piece.position;
-            tilemap.SetTile(tilePosition, null);
+            Vector3Int tilePosition = piece.Cells[i] + piece.Position;
+            Tilemap.SetTile(tilePosition, null);
         }
     }
+
+   
 
     public bool IsValidPosition(Piece piece, Vector3Int position)
     {
         RectInt bounds = Bounds;
 
         // The position is only valid if every cell is valid
-        for (int i = 0; i < piece.cells.Length; i++)
+        for (int i = 0; i < piece.Cells.Length; i++)
         {
-            Vector3Int tilePosition = piece.cells[i] + position;
+            Vector3Int tilePosition = piece.Cells[i] + position;
 
             // An out of bounds tile is invalid
             if (!bounds.Contains((Vector2Int)tilePosition))
@@ -93,12 +135,56 @@ public class Board : MonoBehaviour
             }
 
             // A tile already occupies the position, thus invalid
-            if (tilemap.HasTile(tilePosition))
+            if (Tilemap.HasTile(tilePosition))
             {
                 return false;
             }
         }
 
         return true;
+    }
+
+
+
+    public bool IsValidPosition(PieceManager piece, Vector3Int position)
+    {
+        RectInt bounds = Bounds;
+
+        // The position is only valid if every cell is valid
+        for (int i = 0; i < piece.Cells.Length; i++)
+        {
+            Vector3Int tilePosition = piece.Cells[i] + position;
+
+            // An out of bounds tile is invalid
+            if (!bounds.Contains((Vector2Int)tilePosition))
+            {
+                return false;
+            }
+
+            // A tile already occupies the position, thus invalid
+            if (Tilemap.HasTile(tilePosition))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public void DrawPiece(PieceManager piece)
+    {
+        for (int i = 0; i < piece.Cells.Length; i++)
+        {
+            Vector3Int tilePosition = piece.Cells[i] + piece.Position;
+            Tilemap.SetTile(tilePosition, piece.Data.tile);
+        }
+    }
+    public void Clear(PieceManager piece)
+    {
+        for (int i = 0; i < piece.Cells.Length; i++)
+        {
+            Vector3Int tilePosition = piece.Cells[i] + piece.Position;
+            Tilemap.SetTile(tilePosition, null);
+        }
     }
 }
