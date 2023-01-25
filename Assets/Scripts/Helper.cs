@@ -1,6 +1,6 @@
 public static class Helper
 {
-    public static int Wrap(int input,int max,int min)
+    public static int Wrap(int input,int min,int max)
     {
         if(input < min)
         {

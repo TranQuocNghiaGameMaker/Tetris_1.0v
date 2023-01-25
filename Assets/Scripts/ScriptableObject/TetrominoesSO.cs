@@ -12,12 +12,4 @@ public class TetrominoesSO : ScriptableObject
         int random = Random.Range(0,list.Count);
         return list[random];
     }
-    [ContextMenu("InitializeList")]
-    public void InitializeList()
-    {
-        for (int i = 0; i < list.Count; i++)
-        {
-            list[i].Initialize();
-        }
-    }
 }
