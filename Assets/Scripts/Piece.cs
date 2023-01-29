@@ -3,18 +3,23 @@ using UnityEngine;
 
 public class Piece : MonoBehaviour
 {
-    public Board board { get; private set; }
+    public Board Board { get; private set; }
     public TetrominoData Datas { get; private set; }
     public Vector3Int[] Cells { get; private set; }
     public Vector3Int Position { get; private set; }
     public int RotationIndex { get; private set; }
+
+    [SerializeField] float _stepDelays = 1f;
+    [SerializeField] float _lockDelays = 0.5f;
+    private float _stepTime;
+    private float _lockTime;
     
     public void Initialize(Board board, Vector3Int position, TetrominoData data)
     {
         RotationIndex = 0;
-        this.Datas = data;
-        this.board = board;
-        this.Position = position;
+        Datas = data;
+        this.Board = board;
+        Position = position;
 
         if (Cells == null)
         {
@@ -29,7 +34,8 @@ public class Piece : MonoBehaviour
 
     private void Update()
     {
-        board.Clear(this);
+        Board.Clear(this);
+        _lockTime += Time.deltaTime;
         if (Input.GetKeyDown(KeyCode.S))
         {
             Move(Vector2Int.down);
@@ -56,14 +62,37 @@ public class Piece : MonoBehaviour
         {
             Move(Vector2Int.right);
         }
-        board.DrawPiece(this);
+        if(Time.time > _stepTime)
+        {
+            Step();
+        }
+        Board.DrawPiece(this);
     }
+
+    private void Step()
+    {
+        _stepTime = Time.time  + _stepDelays;
+        Move(Vector2Int.down);
+
+        if(_lockTime > _lockDelays)
+        {
+            Lock() ;
+        }
+    }
+
+    private void Lock()
+    {
+        Board.DrawPiece(this);
+        Board.SpawnPiece();
+    }
+
     private void HardDrop()
     {
         while (Move(Vector2Int.down))
         {
             continue;
         }
+        Lock();
     }
 
     private bool Move(Vector2Int translation)
@@ -72,12 +101,13 @@ public class Piece : MonoBehaviour
         newPosition.x += translation.x;
         newPosition.y += translation.y;
 
-        bool valid = board.IsValidPosition(this, newPosition);
+        bool valid = Board.IsValidPosition(this, newPosition);
 
         // Only save the movement if the new position is valid
         if (valid)
         {
             Position = newPosition;
+            _lockTime = 0;
         }
 
         return valid;
