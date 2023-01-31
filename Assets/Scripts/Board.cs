@@ -179,12 +179,70 @@ public class Board : MonoBehaviour
             Tilemap.SetTile(tilePosition, piece.Data.tile);
         }
     }
-    public void Clear(PieceManager piece)
+    private void Clear(PieceManager piece)
     {
         for (int i = 0; i < piece.Cells.Length; i++)
         {
             Vector3Int tilePosition = piece.Cells[i] + piece.Position;
             Tilemap.SetTile(tilePosition, null);
         }
+    }
+
+    public void ClearLine()
+    {
+        var bound = Bounds;
+        int row = bound.yMin;
+        while(row < bound.yMax)
+        {
+            if (IsLineFull(row))
+            {
+                LineClear(row);
+            }
+            else
+            {
+                row++;
+            }
+        }
+
+    }
+
+    private void LineClear(int row)
+    {
+        var bound = Bounds;
+
+        //Clear all tile in the row
+        for(int i = bound.xMin;i < bound.xMax; i++)
+        {
+            var position = new Vector3Int(i, row);
+            Tilemap.SetTile(position, null);
+        }
+
+        //Shift every row above down one
+        while (row < bound.yMax) 
+        {
+            for (int i = bound.xMin; i < bound.xMax; i++)
+            {
+                Vector3Int position = new(i, row + 1);
+                var above = Tilemap.GetTile(position);
+
+                position = new(i, row);
+                Tilemap.SetTile(position, above);
+            }
+            row++;
+        }
+    }
+
+    private bool IsLineFull(int row)
+    {
+        var bound = Bounds;
+        for (int col = bound.xMin; col < bound.xMax; col++)
+        {
+            var position = new Vector3Int(col, row);
+            if (!Tilemap.HasTile(position))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }

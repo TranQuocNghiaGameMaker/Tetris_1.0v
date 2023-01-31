@@ -83,6 +83,7 @@ public class Piece : MonoBehaviour
     private void Lock()
     {
         Board.DrawPiece(this);
+        Board.ClearLine();
         Board.SpawnPiece();
     }
 
