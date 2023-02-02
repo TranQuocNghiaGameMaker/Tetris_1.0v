@@ -8,7 +8,7 @@ public class Board : MonoBehaviour
     //private PieceManager _piece;
 
     [SerializeField] TetrominoData[] tetrominoes;
-    [SerializeField] Vector2Int boardSize = new(10, 20);
+    public Vector2Int boardSize = new(10, 20);
     [SerializeField] Vector3Int _spawnPosition = new(-1, 8, 0);
 
     public RectInt Bounds
@@ -106,8 +106,8 @@ public class Board : MonoBehaviour
             Tilemap.SetTile(tilePosition, piece.Datas.tile);
         }
     }
-    //Clear piece celltile on the tile map
 
+    //Clear piece celltile on the tile map
     public void Clear(Piece piece)
     {
         for (int i = 0; i < piece.Cells.Length; i++)
